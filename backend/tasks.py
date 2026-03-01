@@ -37,7 +37,7 @@ def download_playlist_task(self, spotify_url):
     for i, song in enumerate(tracks):
         #? Aktualizace stavu pro Flutter
         self.update_state(state='PROGRESS', meta={
-            'current': i + 1,
+            'current': i,
             'total': total,
             'status': f'Downloading {song.name}...',
             'song_photo': f'{song.photo}',
@@ -65,7 +65,7 @@ def download_playlist_task(self, spotify_url):
     #? Naplánuje smazání za 300 sekund (5 minut)
     cleanup_files.apply_async(args=[zip_filename], countdown=300)
     
-    return {'state': "COMPLETED", 'info': {'status': 'Completed', 'zip_url': f'/api/download/{zip_filename}', 'filename': zip_filename,}}
+    return {'status': 'Completed', 'zip_url': f'/api/download/{zip_filename}', 'filename': zip_filename,}
 
 @celery.task
 def cleanup_files(filename):

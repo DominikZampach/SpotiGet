@@ -14,7 +14,7 @@ class SpotifyClient:
             return {'type': 'playlist', 'name': data['name'], 'id': data['id']}
         elif 'album' in url:
             data = self.sp.album(url)
-            return {'type': 'album', 'name': data['name'], 'id': data['id']}
+            return {'type': 'album', 'name': data['name'], 'id': data['id'], 'album_cover': data['images'][0]['url']}
         elif 'track' in url:
             data = self.sp.track(url)
             return {'type': 'track', 'name': data['name'], 'id': data['id']}
@@ -35,11 +35,11 @@ class SpotifyClient:
                 
         elif info['type'] == 'album':
             results = self.sp.album_tracks(url)
-            tracks.extend(self._extract_tracks(results['items'], 'album', album_name=info['name'], album_cover=info['images'][0][url]))
+            tracks.extend(self._extract_tracks(results['items'], 'album', album_name=info['name'], album_cover=info['album_cover']))
             #? Stránkování, pokud je v albu více než 100 skladeb (dost nepravděpodobné, ale radši xd)
             while results['next']:
                 results = self.sp.next(results)
-                tracks.extend(self._extract_tracks(results['items'], 'album', album_name=info['name'], album_cover=info['images'][0][url]))
+                tracks.extend(self._extract_tracks(results['items'], 'album', album_name=info['name'], album_cover=info['album_cover']))
         
         elif info['type'] == 'track':
             track_data = self.sp.track(url)

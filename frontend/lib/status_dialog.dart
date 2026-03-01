@@ -30,7 +30,8 @@ class _StatusDialogState extends State<StatusDialog> {
     _fetchStatus();
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _fetchStatus();
-      if (_responseData["state"].toString().toLowerCase() == "completed") {
+      if (_responseData["state"].toString().toLowerCase() == "success" ||
+          _responseData["state"].toString().toLowerCase() == "failure") {
         _timer?.cancel();
       }
     });
@@ -42,6 +43,10 @@ class _StatusDialogState extends State<StatusDialog> {
     super.dispose();
   }
 
+  void cancelTimer() {
+    _timer?.cancel();
+  }
+
   Future<void> _fetchStatus() async {
     try {
       final statusUrl = Uri.parse('${Consts.apiUrl}/status/${widget.taskId}');
@@ -51,6 +56,7 @@ class _StatusDialogState extends State<StatusDialog> {
       );
 
       final data = jsonDecode(statusResponse.body);
+      print("Current data: $data");
       setState(() {
         _responseData = data;
       });
@@ -98,6 +104,20 @@ class _StatusDialogState extends State<StatusDialog> {
                     ],
                   ),
                 ),
+              if (state == "SUCCESS" && info != null)
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Download ZIP now",
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      Text(info['zip_url'] ?? ""),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -128,14 +148,19 @@ class ProgressDownloading extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Spacer(),
           Flexible(
+            flex: 2,
             child: CachedNetworkImage(
               imageUrl: info["song_photo"] ?? "",
-              height: widget.dialogHeight * 0.3,
+              height: widget.dialogHeight * 0.5,
               alignment: Alignment.center,
-              fit: BoxFit.fitHeight,
+              fit: BoxFit.cover,
               httpHeaders: {'Content-Type': 'application/json; charset=UTF-8'},
-              placeholder: (context, url) => const CircularProgressIndicator(),
+              placeholder: (context, url) => SizedBox(
+                height: widget.dialogHeight * 0.5,
+                child: CircularProgressIndicator(color: Consts.primary),
+              ),
               errorWidget: (context, url, error) =>
                   const Icon(Icons.music_note),
             ),
