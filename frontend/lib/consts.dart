@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Consts {
+  static const String apiUrl = "http://127.0.0.1:5000/api";
+
   static const Color primary = Color.fromRGBO(29, 185, 84, 1);
   static const Color secondary = Color.fromRGBO(179, 179, 179, 1);
   static const Color background = Color.fromRGBO(18, 18, 18, 1);

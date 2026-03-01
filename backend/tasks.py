@@ -22,20 +22,26 @@ def simplify_filename(name):
 def download_playlist_task(self, spotify_url):
     """Hlavní úkol pro stažení celého playlistu/alba"""
     
-    self.update_state(state='PROGRESS', meta={'status': 'Načítám Spotify...'})
+    self.update_state(state='PROGRESS', meta={'current': 0,
+            'total': 1, 'status': 'Načítám Spotify...', 'song_photo': '',
+            'album_playlist_name': ''})
     tracks = sp.get_tracks(spotify_url)
     total = len(tracks)
     
     #? Vytvoříme unikátní ID pro složku (použijeme task_id Celery)
     folder_id = self.request.id
     
+    #? Získám informace jako je název alba/playlistu, ...
+    albumPlaylistInfo = sp.get_info(spotify_url)
+    
     for i, song in enumerate(tracks):
         #? Aktualizace stavu pro Flutter
         self.update_state(state='PROGRESS', meta={
-            'current': i + 1, 
-            'total': total, 
-            'status': f'Zpracovávám: {song.name}',
-            'song_photo': f'{song.photo}'
+            'current': i + 1,
+            'total': total,
+            'status': f'Downloading {song.name}...',
+            'song_photo': f'{song.photo}',
+            'album_playlist_name': f"{albumPlaylistInfo['name']}",
         })
         
         yt_url = yt.get_video_url(song.search_query)
@@ -43,12 +49,11 @@ def download_playlist_task(self, spotify_url):
             dl.download_song(yt_url, folder_id, song)
 
     #? Po stažení všech písní začínáme zipovat
-    self.update_state(state='PROGRESS', meta={'current': total, 'total': total, 'status': 'Vytvářím ZIP archiv...'})
+    self.update_state(state='PROGRESS', meta={'current': total, 'total': total, 'status': 'Creating ZIP...', 'song_photo': "", 'album_playlist_name': ""})
     
     base_path = os.path.join('downloads', folder_id)
     
-    info = sp.get_info(spotify_url)
-    clean_name = simplify_filename(info['name'])
+    clean_name = simplify_filename(albumPlaylistInfo['name'])
     zip_filename = f"{clean_name}.zip"
     zip_full_path = os.path.join('downloads', zip_filename)
     
@@ -60,7 +65,7 @@ def download_playlist_task(self, spotify_url):
     #? Naplánuje smazání za 300 sekund (5 minut)
     cleanup_files.apply_async(args=[zip_filename], countdown=300)
     
-    return {'status': 'Completed', 'zip_url': f'/api/download/{zip_filename}', 'filename': zip_filename,}
+    return {'state': "COMPLETED", 'info': {'status': 'Completed', 'zip_url': f'/api/download/{zip_filename}', 'filename': zip_filename,}}
 
 @celery.task
 def cleanup_files(filename):

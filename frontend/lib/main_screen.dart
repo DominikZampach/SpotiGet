@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:web_spotify_downloader/consts.dart';
 import 'package:web_spotify_downloader/logic/is_spotify_url_valid.dart';
+import 'package:web_spotify_downloader/logic/show_message_text.dart';
+import 'package:web_spotify_downloader/status_dialog.dart';
 import 'package:web_spotify_downloader/widgets/input_textbox.dart';
 import 'package:web_spotify_downloader/widgets/projects_logo.dart';
 import 'package:web_spotify_downloader/widgets/start_download_button.dart';
+import 'package:http/http.dart' as http;
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,19 +20,55 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final TextEditingController urlController = TextEditingController();
 
-  dynamic startDownloadFunction() {
-    //TODO: Vypracovat tuto funkci: Musí umět kontrolovat, že se jedná o validní spotify adresu (nějaká funkce) a poté uživatele hodit do nějakého DialogWindow (ze kterého nebude moct odejít!), kde se začne ukazovat progress stahování a pak výsledný stažený soubor
-    if (isSpotifyUrlValid(urlController.text)) {
-    } else {
-      //TODO: Vypíše nějakou chybovou hlášku, asi využít FlutterToastu?
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
     bool isMobile = Consts.isMobile(screenWidth);
+
+    dynamic startDownloadFunction() async {
+      //TODO: Vypracovat tuto funkci: Musí umět kontrolovat, že se jedná o validní spotify adresu (nějaká funkce) a poté uživatele hodit do nějakého DialogWindow (ze kterého nebude moct odejít!), kde se začne ukazovat progress stahování a pak výsledný stažený soubor
+      if (!isSpotifyUrlValid(urlController.text)) {
+        //? Vypsání chybové hlášky pro invalid url adresu
+        showMessageText(
+          text: "Invalid URL address",
+          context: context,
+          width: screenWidth * 0.2,
+        );
+        return;
+      }
+
+      //? Poslání requestu na API
+      final requestUrl = Uri.parse("${Consts.apiUrl}/request");
+      try {
+        final response = await http.post(
+          requestUrl,
+          headers: {'Content-Type': 'application/json; charset=UTF-8'},
+          body: jsonEncode({'url': urlController.text}),
+        );
+        if (response.statusCode != 202) {
+          print("Nastala chyba: ${response.body}");
+        } else {
+          print("Vše v pořádku, body: ${response.body}");
+          //? Zobrazení Dialogového okna s podrobnostmi o stahování
+          final responseBodyJSON = jsonDecode(response.body);
+          if (mounted) {
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => StatusDialog(
+                taskId: responseBodyJSON["task_id"],
+                dialogWidth: screenWidth * 0.5,
+                dialogHeight: screenHeight * 0.7,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        print("Chyba: $e");
+        return;
+      }
+    }
 
     if (!isMobile) {
       //? Desktopové zobrazení
@@ -128,7 +169,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 Center(
                   child: StartDownloadButton(
-                    onClickedFunc: () {},
+                    onClickedFunc: startDownloadFunction,
                     width: 400,
                     horizontalPadding: 30,
                     bottomPadding: 20,

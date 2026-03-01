@@ -35,29 +35,39 @@ class SpotifyClient:
                 
         elif info['type'] == 'album':
             results = self.sp.album_tracks(url)
-            tracks.extend(self._extract_tracks(results['items'], 'album', album_name=info['name']))
+            tracks.extend(self._extract_tracks(results['items'], 'album', album_name=info['name'], album_cover=info['images'][0][url]))
+            #? Stránkování, pokud je v albu více než 100 skladeb (dost nepravděpodobné, ale radši xd)
             while results['next']:
                 results = self.sp.next(results)
-                tracks.extend(self._extract_tracks(results['items'], 'album', album_name=info['name']))
+                tracks.extend(self._extract_tracks(results['items'], 'album', album_name=info['name'], album_cover=info['images'][0][url]))
         
         elif info['type'] == 'track':
             track_data = self.sp.track(url)
-            tracks.append(self._format_track(track_data))
+            tracks.append(self._format_track(track_data, track_data['album']['images'][0]['url'], track_data['album']['name']))
 
         return tracks
     
-    def _extract_tracks(self, items, type, album_name=None):
+    def _extract_tracks(self, items, type, album_name=None, album_cover=None):
         extracted = []
         for item in items:
             #? Playlisty mají track vnořený, alba ho mají přímo
             track_data = item['track'] if type == 'playlist' else item
             if track_data: #? Ošetření pro smazané skladby v playlistu
-                extracted.append(self._format_track(track_data, album_name))
+                current_cover = None
+                if type == 'playlist':
+                    #? V playlistu má každý track své album a své obrázky
+                    images = track_data.get('album', {}).get('images', [])
+                    if images:
+                        current_cover = images[0]['url']
+                else:
+                    current_cover = album_cover
+                extracted.append(self._format_track(track_data, current_cover, album_name))
         return extracted
     
-    def _format_track(self, t, album_name=None):
+    def _format_track(self, t, cover ,album_name=None):
         return Song(
             t['name'],
             t['artists'],
+            cover,
             album_name if album_name else t.get('album', {}).get('name', 'Unknown')
         )
