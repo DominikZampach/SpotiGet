@@ -22,7 +22,7 @@ def simplify_filename(name):
 def download_playlist_task(self, spotify_url):
     """Hlavní úkol pro stažení celého playlistu/alba"""
     
-    self.update_state(state='PROGRESS', meta={'current': 0,
+    self.update_state(state='INICIALIZATION', meta={'current': 0,
             'total': 1, 'status': 'Načítám Spotify...', 'song_photo': '',
             'album_playlist_name': ''})
     tracks = sp.get_tracks(spotify_url)
@@ -49,7 +49,7 @@ def download_playlist_task(self, spotify_url):
             dl.download_song(yt_url, folder_id, song)
 
     #? Po stažení všech písní začínáme zipovat
-    self.update_state(state='PROGRESS', meta={'current': total, 'total': total, 'status': 'Creating ZIP...', 'song_photo': "", 'album_playlist_name': ""})
+    self.update_state(state='ZIPPING', meta={'current': total, 'total': total, 'status': 'Creating ZIP...', 'song_photo': "", 'album_playlist_name': ""})
     
     base_path = os.path.join('downloads', folder_id)
     
@@ -62,8 +62,8 @@ def download_playlist_task(self, spotify_url):
     #? Smažeme původní složku s písničkami, už máme ZIP
     shutil.rmtree(base_path)
     
-    #? Naplánuje smazání za 300 sekund (5 minut)
-    cleanup_files.apply_async(args=[zip_filename], countdown=300)
+    #? Naplánuje smazání za 600 sekund (10 minut)
+    cleanup_files.apply_async(args=[zip_filename], countdown=600)
     
     return {'status': 'Completed', 'zip_url': f'/api/download/{zip_filename}', 'filename': zip_filename,}
 

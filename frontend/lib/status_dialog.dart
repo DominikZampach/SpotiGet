@@ -85,13 +85,24 @@ class _StatusDialogState extends State<StatusDialog> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              if (state == "INICIALIZATION")
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Starting download..",
+                        style: Theme.of(context).textTheme.displayLarge,
+                      ),
+                    ],
+                  ),
+                ),
               if (state == "PROGRESS" &&
                   info != null &&
                   (info["status"]?.contains("Downloading") ?? false))
                 ProgressDownloading(info: info, widget: widget),
-              if (state == "PROGRESS" &&
-                  info != null &&
-                  (info["status"].contains("ZIP") ?? false))
+              if (state == "ZIPPING" && info != null)
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
