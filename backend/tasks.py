@@ -19,7 +19,7 @@ def simplify_filename(name):
     return re.sub(r'[\\/*?:"<>|]', "", name)
 
 @celery.task(bind=True)
-def download_playlist_task(self, spotify_url):
+def download_playlist_task(self, spotify_url, want_numbered=False):
     """Hlavní úkol pro stažení celého playlistu/alba"""
     
     self.update_state(state='INICIALIZATION', meta={'current': 0,
@@ -46,7 +46,11 @@ def download_playlist_task(self, spotify_url):
         
         yt_url = yt.get_video_url(song.search_query)
         if yt_url:
-            dl.download_song(yt_url, folder_id, song)
+            if want_numbered:
+                #? Poslání požadavku na stažení písničky, kdy se před název navíc napíše i číslo
+                dl.download_song(yt_url, folder_id, song, i+1)
+            else:
+                dl.download_song(yt_url, folder_id, song)
 
     #? Po stažení všech písní začínáme zipovat
     self.update_state(state='ZIPPING', meta={'current': total, 'total': total, 'status': 'Creating ZIP...', 'song_photo': "", 'album_playlist_name': ""})

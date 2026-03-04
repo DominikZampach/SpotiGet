@@ -200,7 +200,7 @@ class ProgressDownloading extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "${(progressValue * 100).toInt()}%",
+                  "$current/$total - ${(progressValue * 100).toInt()}%",
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],

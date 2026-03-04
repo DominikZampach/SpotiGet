@@ -22,13 +22,17 @@ sp_client = SpotifyClient(CLIENT_ID, CLIENT_SECRET)
 
 @app.route('/api/request', methods=['POST'])
 def handle_request():
+    '''
+        Musí vždy dostat body s atributy url a want_numbered!
+    '''
     data = request.json
     url = data.get('url')
+    want_numbered = data.get('want_numbered')
     
     if not url:
         return jsonify({'error': 'No URL provided'}), 400
     
-    task = download_playlist_task.delay(url)
+    task = download_playlist_task.delay(url, want_numbered)
     
     return jsonify({
         'status': 'Accepted',
@@ -63,4 +67,4 @@ def download_file(filename):
     return jsonify({'error': 'File not found'}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5050)

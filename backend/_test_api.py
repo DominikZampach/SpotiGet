@@ -1,7 +1,7 @@
 import requests
 import time
 
-BASE_URL = "http://127.0.0.1:5000/api"
+BASE_URL = "http://127.0.0.1:5050/api"
 
 def test_full_flow(spotify_url):
     # 1. POSLÁNÍ REQUESTU
@@ -28,7 +28,7 @@ def test_full_flow(spotify_url):
             print(f"--- Progres: {info.get('current')}/{info.get('total')} - {info.get('status')}")
         elif state == 'SUCCESS':
             print("\n3. HOTOVO!")
-            print(f"Odkaz ke stažení: http://127.0.0.1:5000{info.get('zip_url')}")
+            print(f"Odkaz ke stažení: http://127.0.0.1:5050{info.get('zip_url')}")
             break
         elif state == 'FAILURE':
             print("\n!!! Úkol selhal:", info)

@@ -7,11 +7,12 @@ class DownloadService:
         if not os.path.exists(self.base_download_path):
             os.makedirs(self.base_download_path)
         
-    def download_song(self, youtube_url, folder_name, song):
+    def download_song(self, youtube_url, folder_name, song, number=None):
         """
         Stáhne písničku z YouTube a uloží ji jako MP3 s metadaty.
         folder_name: název podsložky (ID playlistu/alba nebo UUID)
         song: instance třídy Song pro metadata
+        number: číslo do názvu pokud je tak zadáno, pokud ne tak dostane None a nic se neudělá
         """
         download_dir = os.path.join(self.base_download_path, folder_name)
         
@@ -23,9 +24,14 @@ class DownloadService:
         if not os.path.exists(download_dir):
             os.makedirs(download_dir)
         
+        if number is None:
+            outtmpl = f'{download_dir}/{song.name}.%(ext)s'
+        else:
+            outtmpl = f'{download_dir}/{number}. {song.name}.%(ext)s'
+        
         ydl_opts = {
             'format': 'bestaudio/best',
-            'outtmpl': f'{download_dir}/{song.name}.%(ext)s',
+            'outtmpl': outtmpl,
             'ffmpeg_location': self.ffmpeg_path,
             'postprocessors': [
                 {

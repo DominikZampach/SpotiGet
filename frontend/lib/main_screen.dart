@@ -19,6 +19,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final TextEditingController urlController = TextEditingController();
+  bool wantTracksNumbered =
+      false; //? Toto bude používáno na CheckBox, který bude zajišťovat pokud chce uživatel stáhnout album/playlist číslovaně tak, jak jej má ve Spotify
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,6 @@ class _MainScreenState extends State<MainScreen> {
     bool isMobile = Consts.isMobile(screenWidth);
 
     dynamic startDownloadFunction() async {
-      //TODO: Vypracovat tuto funkci: Musí umět kontrolovat, že se jedná o validní spotify adresu (nějaká funkce) a poté uživatele hodit do nějakého DialogWindow (ze kterého nebude moct odejít!), kde se začne ukazovat progress stahování a pak výsledný stažený soubor
       if (!isSpotifyUrlValid(urlController.text)) {
         //? Vypsání chybové hlášky pro invalid url adresu
         showMessageText(
@@ -44,7 +45,10 @@ class _MainScreenState extends State<MainScreen> {
         final response = await http.post(
           requestUrl,
           headers: {'Content-Type': 'application/json; charset=UTF-8'},
-          body: jsonEncode({'url': urlController.text}),
+          body: jsonEncode({
+            'url': urlController.text,
+            'want_numbered': wantTracksNumbered,
+          }),
         );
         if (response.statusCode != 202) {
           print("Nastala chyba: ${response.body}");
@@ -121,7 +125,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 Spacer(flex: 1),
                 Flexible(
-                  flex: 1,
+                  flex: 2,
                   child: SizedBox(
                     width: double.infinity,
                     child: SelectableText.rich(
@@ -165,6 +169,29 @@ class _MainScreenState extends State<MainScreen> {
                         800, //? Tady si můžu dovolit fixní width, protože při 600 to jde na mobilní view a zároveň padding zajišťuje, že vždy bude mezera od krajů a také se to začne automaticky zmenšovat
                     horizontalPadding: 30,
                     verticalPadding: 20,
+                  ),
+                ),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Keep playlist/album order?",
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        SizedBox(width: 20),
+                        Checkbox(
+                          value: wantTracksNumbered,
+                          onChanged: (value) => setState(() {
+                            wantTracksNumbered = !wantTracksNumbered;
+                          }),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Center(
