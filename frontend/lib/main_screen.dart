@@ -205,6 +205,19 @@ class _MainScreenState extends State<MainScreen> {
                 Center(
                   child: SizedBox(width: 800, child: Divider(thickness: 1)),
                 ),
+                Flexible(
+                  flex: 1,
+                  child: Center(
+                    child: SelectableText(
+                      "Made by Dominik Žampach",
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        color: Consts.secondary,
+                        fontStyle: FontStyle.normal,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

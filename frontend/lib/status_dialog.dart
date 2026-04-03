@@ -85,15 +85,17 @@ class _StatusDialogState extends State<StatusDialog> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              if (state == "FAILURE")
+                Expanded(child: Text("Error: ${info!['error']}")),
               if (state == "INICIALIZATION")
                 Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         "Starting download..",
-                        style: Theme.of(context).textTheme.displayLarge,
+                        style: Theme.of(context).textTheme.displayMedium,
                       ),
                     ],
                   ),
@@ -102,36 +104,65 @@ class _StatusDialogState extends State<StatusDialog> {
                   info != null &&
                   (info["status"]?.contains("Downloading") ?? false))
                 ProgressDownloading(info: info, widget: widget),
-              if (state == "ZIPPING" && info != null)
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Creating ZIP",
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                    ],
-                  ),
-                ),
+              if (state == "ZIPPING" && info != null) ZippingContent(),
               if (state == "SUCCESS" && info != null)
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Download ZIP now",
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      Text(info['zip_url'] ?? ""),
-                    ],
-                  ),
-                ),
+                DownloadContent(info: info),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class DownloadContent extends StatelessWidget {
+  const DownloadContent({super.key, required this.info});
+
+  final Map<String, dynamic>? info;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Flexible(
+            flex: 2,
+            child: Text(
+              "Download ZIP now",
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          Text(info!['zip_url'] ?? ""),
+        ],
+      ),
+    );
+  }
+}
+
+class ZippingContent extends StatelessWidget {
+  const ZippingContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Flexible(
+            flex: 2,
+            child: CircularProgressIndicator(color: Consts.primary),
+          ),
+          Flexible(
+            flex: 1,
+            child: Text(
+              "Creating ZIP",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -159,7 +190,13 @@ class ProgressDownloading extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Spacer(),
+          Flexible(
+            flex: 1,
+            child: SelectableText(
+              info["album_playlist_name"],
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
           Flexible(
             flex: 2,
             child: CachedNetworkImage(
@@ -170,7 +207,10 @@ class ProgressDownloading extends StatelessWidget {
               httpHeaders: {'Content-Type': 'application/json; charset=UTF-8'},
               placeholder: (context, url) => SizedBox(
                 height: widget.dialogHeight * 0.5,
-                child: CircularProgressIndicator(color: Consts.primary),
+                child: CircularProgressIndicator(
+                  color: Consts.primary,
+                  padding: EdgeInsets.all(20),
+                ),
               ),
               errorWidget: (context, url, error) =>
                   const Icon(Icons.music_note),
@@ -180,7 +220,9 @@ class ProgressDownloading extends StatelessWidget {
           Flexible(
             child: Text(
               info["status"] ?? "Zpracovávám...",
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge!.copyWith(color: Consts.secondary),
             ),
           ),
           Spacer(),

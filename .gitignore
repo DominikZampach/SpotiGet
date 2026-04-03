@@ -49,4 +49,5 @@ app.*.map.json
 ffmpeg.exe
 ffprobe.exe
 /backend/downloads
-/backend/bin/Redis 
+/backend/bin/Redis
+firebase_options.dart

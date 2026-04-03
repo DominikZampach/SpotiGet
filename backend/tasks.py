@@ -25,51 +25,54 @@ def download_playlist_task(self, spotify_url, want_numbered=False):
     self.update_state(state='INICIALIZATION', meta={'current': 0,
             'total': 1, 'status': 'Načítám Spotify...', 'song_photo': '',
             'album_playlist_name': ''})
-    tracks = sp.get_tracks(spotify_url)
-    total = len(tracks)
-    
-    #? Vytvoříme unikátní ID pro složku (použijeme task_id Celery)
-    folder_id = self.request.id
-    
-    #? Získám informace jako je název alba/playlistu, ...
-    albumPlaylistInfo = sp.get_info(spotify_url)
-    
-    for i, song in enumerate(tracks):
-        #? Aktualizace stavu pro Flutter
-        self.update_state(state='PROGRESS', meta={
-            'current': i,
-            'total': total,
-            'status': f'Downloading {song.name}...',
-            'song_photo': f'{song.photo}',
-            'album_playlist_name': f"{albumPlaylistInfo['name']}",
-        })
+    try:
+        tracks = sp.get_tracks(spotify_url)
+        total = len(tracks)
         
-        yt_url = yt.get_video_url(song.search_query)
-        if yt_url:
-            if want_numbered:
-                #? Poslání požadavku na stažení písničky, kdy se před název navíc napíše i číslo
-                dl.download_song(yt_url, folder_id, song, i+1)
-            else:
-                dl.download_song(yt_url, folder_id, song)
+        #? Vytvoříme unikátní ID pro složku (použijeme task_id Celery)
+        folder_id = self.request.id
+        
+        #? Získám informace jako je název alba/playlistu, ...
+        albumPlaylistInfo = sp.get_info(spotify_url)
+        
+        for i, song in enumerate(tracks):
+            #? Aktualizace stavu pro Flutter
+            self.update_state(state='PROGRESS', meta={
+                'current': i,
+                'total': total,
+                'status': f'Downloading {song.name}...',
+                'song_photo': f'{song.photo}',
+                'album_playlist_name': f"{albumPlaylistInfo['name']}",
+            })
+            
+            yt_url = yt.get_video_url(song.search_query)
+            if yt_url:
+                if want_numbered:
+                    #? Poslání požadavku na stažení písničky, kdy se před název navíc napíše i číslo
+                    dl.download_song(yt_url, folder_id, song, i+1)
+                else:
+                    dl.download_song(yt_url, folder_id, song)
 
-    #? Po stažení všech písní začínáme zipovat
-    self.update_state(state='ZIPPING', meta={'current': total, 'total': total, 'status': 'Creating ZIP...', 'song_photo': "", 'album_playlist_name': ""})
-    
-    base_path = os.path.join('downloads', folder_id)
-    
-    clean_name = simplify_filename(albumPlaylistInfo['name'])
-    zip_filename = f"{clean_name}.zip"
-    zip_full_path = os.path.join('downloads', zip_filename)
-    
-    shutil.make_archive(os.path.join('downloads', clean_name), 'zip', base_path)
-    
-    #? Smažeme původní složku s písničkami, už máme ZIP
-    shutil.rmtree(base_path)
-    
-    #? Naplánuje smazání za 600 sekund (10 minut)
-    cleanup_files.apply_async(args=[zip_filename], countdown=600)
-    
-    return {'status': 'Completed', 'zip_url': f'/api/download/{zip_filename}', 'filename': zip_filename,}
+        #? Po stažení všech písní začínáme zipovat
+        self.update_state(state='ZIPPING', meta={'current': total, 'total': total, 'status': 'Creating ZIP...', 'song_photo': "", 'album_playlist_name': ""})
+        
+        base_path = os.path.join('downloads', folder_id)
+        
+        clean_name = simplify_filename(albumPlaylistInfo['name'])
+        zip_filename = f"{clean_name}.zip"
+        zip_full_path = os.path.join('downloads', zip_filename)
+        
+        shutil.make_archive(os.path.join('downloads', clean_name), 'zip', base_path)
+        
+        #? Smažeme původní složku s písničkami, už máme ZIP
+        shutil.rmtree(base_path)
+        
+        #? Naplánuje smazání za 600 sekund (10 minut)
+        cleanup_files.apply_async(args=[zip_filename], countdown=600)
+        
+        return {'status': 'Completed', 'zip_url': f'/api/download/{zip_filename}', 'filename': zip_filename,}
+    except Exception as e:
+        self.update_state(state='FAILURE', meta={'error': str(e)}) 
 
 @celery.task
 def cleanup_files(filename):
