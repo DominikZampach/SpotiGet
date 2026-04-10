@@ -98,12 +98,12 @@ class _StatusDialogState extends State<StatusDialog> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Flexible(
-                flex: 1,
+                fit: FlexFit.loose,
                 child: SizedBox(
                   width: double.infinity,
+                  height: widget.dialogWidth * 0.1,
                   child: Stack(
                     alignment: AlignmentGeometry.topCenter,
-                    fit: StackFit.expand,
                     children: [
                       Positioned(
                         right: 0,
@@ -239,7 +239,7 @@ class ProgressDownloading extends StatelessWidget {
           Spacer(),
           CachedNetworkImage(
             imageUrl: info["song_photo"] ?? "",
-            height: widget.dialogHeight * 0.5,
+            height: widget.dialogHeight * 0.4,
             alignment: Alignment.center,
             fit: BoxFit.cover,
             httpHeaders: {'Content-Type': 'application/json; charset=UTF-8'},

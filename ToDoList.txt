@@ -1,0 +1,4 @@
+Co možná udělat:
+- Když 2 uživatelé stahují např. stejné album/playlist se stejným názvem, tak zamezit
+přepisování jednoho zip souboru dalším, trochu jiným (možná přidat nějaké číslo k tomu, ...)
+

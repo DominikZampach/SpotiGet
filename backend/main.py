@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from tasks import download_playlist_task #? Importujeme task
 from celery.result import AsyncResult
 from celery_app import celery
-from celery.task.control import revoke
 
 app = Flask(__name__)
 CORS(app) #? Povolí požadavky z Flutter Webu
