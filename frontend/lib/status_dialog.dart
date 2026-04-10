@@ -65,6 +65,15 @@ class _StatusDialogState extends State<StatusDialog> {
     }
   }
 
+  void closeStatusDialog() {
+    /*
+      TODO: Dát znamení do backendu, že může task dropnout¨
+      Vrátit se zpět na hlavní stránku
+    */
+
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = _responseData["state"];
@@ -85,8 +94,29 @@ class _StatusDialogState extends State<StatusDialog> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Flexible(
+                flex: 1,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Stack(
+                    alignment: AlignmentGeometry.topCenter,
+                    fit: StackFit.expand,
+                    children: [
+                      Positioned(
+                        right: 0,
+                        child: IconButton(
+                          onPressed: () => closeStatusDialog(),
+                          icon: Icon(Icons.close, size: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               if (state == "FAILURE")
-                Expanded(child: Text("Error: ${info!['error']}")),
+                Center(
+                  child: Expanded(child: Text("Error: ${info!['error']}")),
+                ),
               if (state == "INICIALIZATION")
                 Expanded(
                   child: Column(
@@ -127,11 +157,14 @@ class DownloadContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Flexible(
-            flex: 2,
-            child: Text(
-              "Download ZIP now",
-              style: Theme.of(context).textTheme.bodyLarge,
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Flexible(
+              flex: 2,
+              child: Text(
+                "Download ZIP now",
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
           ),
           Text(info!['zip_url'] ?? ""),
@@ -190,33 +223,32 @@ class ProgressDownloading extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Flexible(
-            flex: 1,
-            child: SelectableText(
-              info["album_playlist_name"],
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-          Flexible(
-            flex: 2,
-            child: CachedNetworkImage(
-              imageUrl: info["song_photo"] ?? "",
-              height: widget.dialogHeight * 0.5,
-              alignment: Alignment.center,
-              fit: BoxFit.cover,
-              httpHeaders: {'Content-Type': 'application/json; charset=UTF-8'},
-              placeholder: (context, url) => SizedBox(
-                height: widget.dialogHeight * 0.5,
-                child: CircularProgressIndicator(
-                  color: Consts.primary,
-                  padding: EdgeInsets.all(20),
-                ),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Flexible(
+              flex: 1,
+              child: SelectableText(
+                info["album_playlist_name"],
+                style: Theme.of(context).textTheme.bodyLarge,
               ),
-              errorWidget: (context, url, error) =>
-                  const Icon(Icons.music_note),
             ),
           ),
           Spacer(),
+          CachedNetworkImage(
+            imageUrl: info["song_photo"] ?? "",
+            height: widget.dialogHeight * 0.5,
+            alignment: Alignment.center,
+            fit: BoxFit.cover,
+            httpHeaders: {'Content-Type': 'application/json; charset=UTF-8'},
+            placeholder: (context, url) => SizedBox(
+              height: widget.dialogHeight * 0.5,
+              child: CircularProgressIndicator(
+                color: Consts.primary,
+                padding: EdgeInsets.all(20),
+              ),
+            ),
+            errorWidget: (context, url, error) => const Icon(Icons.music_note),
+          ),
           Flexible(
             child: Text(
               info["status"] ?? "Zpracovávám...",
@@ -225,7 +257,6 @@ class ProgressDownloading extends StatelessWidget {
               ).textTheme.bodyLarge!.copyWith(color: Consts.secondary),
             ),
           ),
-          Spacer(),
           Flexible(
             child: Column(
               children: [
