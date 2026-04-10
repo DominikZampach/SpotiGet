@@ -33,6 +33,7 @@ class DownloadService:
             'format': 'bestaudio/best',
             'outtmpl': outtmpl,
             'ffmpeg_location': self.ffmpeg_path,
+            'writethumbnail': True,
             'postprocessors': [
                 {
                     'key': 'FFmpegExtractAudio',
@@ -43,6 +44,9 @@ class DownloadService:
                     'key': 'FFmpegMetadata',
                     'add_metadata': True,
                 },
+                {
+                    'key': 'EmbedThumbnail',
+                }
             ],
             'postprocessor_args': [
                 '-metadata', f'title={song.name}',

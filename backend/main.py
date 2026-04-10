@@ -1,4 +1,5 @@
 import os
+import shutil
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from services.spotify_client import SpotifyClient
@@ -6,6 +7,7 @@ from dotenv import load_dotenv
 from tasks import download_playlist_task #? Importujeme task
 from celery.result import AsyncResult
 from celery_app import celery
+from celery.task.control import revoke
 
 app = Flask(__name__)
 CORS(app) #? Povolí požadavky z Flutter Webu
@@ -61,10 +63,22 @@ def get_status(task_id):
 @app.route('/api/download/<filename>', methods=['GET'])
 def download_file(filename):
     """Endpoint pro samotné stažení hotového ZIPu"""
-    path = os.path.join('downloads', {filename})
+    path = os.path.join('downloads', filename)
     if os.path.exists(path):
         return send_file(path, as_attachment=True, download_name=filename)
     return jsonify({'error': 'File not found'}), 404
+
+@app.route('/api/cancel/<task_id>', methods=['POST'])
+def cancel_task(task_id):
+    # Zrušení úlohy v Celery (terminate=True vynutí ukončení procesu)
+    celery.control.revoke(task_id, terminate=True)
+    
+    # Smazání rozpracované složky
+    path = os.path.join('downloads', task_id)
+    if os.path.exists(path):
+        shutil.rmtree(path)
+        
+    return jsonify({'status': 'Cancelled'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=5050)

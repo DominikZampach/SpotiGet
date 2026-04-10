@@ -65,13 +65,16 @@ class _StatusDialogState extends State<StatusDialog> {
     }
   }
 
-  void closeStatusDialog() {
-    /*
-      TODO: Dát znamení do backendu, že může task dropnout¨
-      Vrátit se zpět na hlavní stránku
-    */
-
-    Navigator.of(context).pop();
+  Future<void> closeStatusDialog() async {
+    try {
+      final cancelUrl = Uri.parse('${Consts.apiUrl}/cancel/${widget.taskId}');
+      await http.post(cancelUrl);
+      _timer?.cancel();
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      print("Chyba při rušení: $e");
+      if (mounted) Navigator.of(context).pop();
+    }
   }
 
   @override

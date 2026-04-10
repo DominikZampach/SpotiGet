@@ -76,155 +76,260 @@ class _MainScreenState extends State<MainScreen> {
 
     if (!isMobile) {
       //? Desktopové zobrazení
-      return Scaffold(
-        body: Container(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              colors: [Consts.surface, Consts.primary],
-              radius: 8,
-            ),
+      return desktopView(context, screenHeight, startDownloadFunction);
+    }
+
+    //? Mobilní zobrazení
+    return mobileView(context, screenWidth, startDownloadFunction);
+  }
+
+  Scaffold desktopView(
+    BuildContext context,
+    double screenHeight,
+    Function() startDownloadFunction,
+  ) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            colors: [Consts.surface, Consts.primary],
+            radius: 8,
           ),
-          child: Padding(
-            padding: EdgeInsets.all(30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Flexible(
-                  flex: 4,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      ProjectLogo(width: 100),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          //TODO
-                        },
-                        label: Padding(
-                          padding: const EdgeInsets.all(5),
-                          child: Text(
-                            "Log into Spotify",
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ),
-                        icon: Icon(
-                          Icons.download_for_offline_rounded,
-                          color: Consts.primary,
-                        ),
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(
-                            Consts.surface.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Spacer(flex: 1),
-                Flexible(
-                  flex: 2,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SelectableText.rich(
-                      style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                      TextSpan(
-                        children: [
-                          TextSpan(text: "Spoti"),
-                          TextSpan(
-                            text: "Get",
-                            style: TextStyle(color: Consts.primary),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: screenHeight * 0.01,
-                ), //? Možná předělat do Spaceru
-                Flexible(
-                  flex: 1,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SelectableText(
-                      "Download your favourite playlist and albums in high quality.",
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        color: Consts.secondary,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: InputTextbox(
-                    textController: urlController,
-                    width:
-                        800, //? Tady si můžu dovolit fixní width, protože při 600 to jde na mobilní view a zároveň padding zajišťuje, že vždy bude mezera od krajů a také se to začne automaticky zmenšovat
-                    horizontalPadding: 30,
-                    verticalPadding: 20,
-                  ),
-                ),
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Keep playlist/album order?",
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(30),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                flex: 4,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    ProjectLogo(width: 100),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        //TODO
+                      },
+                      label: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          "Log into Spotify",
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
-                        SizedBox(width: 20),
-                        Checkbox(
-                          value: wantTracksNumbered,
-                          onChanged: (value) => setState(() {
-                            wantTracksNumbered = !wantTracksNumbered;
-                          }),
+                      ),
+                      icon: Icon(
+                        Icons.download_for_offline_rounded,
+                        color: Consts.primary,
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(
+                          Consts.surface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Spacer(flex: 1),
+              Flexible(
+                flex: 2,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SelectableText.rich(
+                    style: Theme.of(context).textTheme.displayLarge!.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                    TextSpan(
+                      children: [
+                        TextSpan(text: "Spoti"),
+                        TextSpan(
+                          text: "Get",
+                          style: TextStyle(color: Consts.primary),
                         ),
                       ],
                     ),
                   ),
                 ),
-                Center(
-                  child: StartDownloadButton(
-                    onClickedFunc: startDownloadFunction,
-                    width: 400,
-                    horizontalPadding: 30,
-                    bottomPadding: 20,
-                  ),
-                ),
-                Center(
-                  child: SizedBox(width: 800, child: Divider(thickness: 1)),
-                ),
-                Flexible(
-                  flex: 1,
-                  child: Center(
-                    child: SelectableText(
-                      "Made by Dominik Žampach",
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        color: Consts.secondary,
-                        fontStyle: FontStyle.normal,
-                      ),
-                      textAlign: TextAlign.center,
+              ),
+              SizedBox(
+                height: screenHeight * 0.01,
+              ), //? Možná předělat do Spaceru
+              Flexible(
+                flex: 1,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SelectableText(
+                    "Download your favourite playlist and albums in high quality.",
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      color: Consts.secondary,
+                      fontStyle: FontStyle.italic,
                     ),
+                    textAlign: TextAlign.center,
                   ),
+                ),
+              ),
+              Center(
+                child: InputTextbox(
+                  textController: urlController,
+                  width:
+                      800, //? Tady si můžu dovolit fixní width, protože při 600 to jde na mobilní view a zároveň padding zajišťuje, že vždy bude mezera od krajů a také se to začne automaticky zmenšovat
+                  horizontalPadding: 30,
+                  verticalPadding: 20,
+                ),
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Keep playlist/album order?",
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      SizedBox(width: 20),
+                      Checkbox(
+                        value: wantTracksNumbered,
+                        onChanged: (value) => setState(() {
+                          wantTracksNumbered = !wantTracksNumbered;
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Center(
+                child: StartDownloadButton(
+                  onClickedFunc: startDownloadFunction,
+                  width: 400,
+                  horizontalPadding: 30,
+                  bottomPadding: 20,
+                ),
+              ),
+              Center(child: SizedBox(width: 800, child: Divider(thickness: 1))),
+              Flexible(
+                flex: 1,
+                child: Center(
+                  child: SelectableText(
+                    "Made by Dominik Žampach",
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      color: Consts.secondary,
+                      fontStyle: FontStyle.normal,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Scaffold mobileView(
+    BuildContext context,
+    double screenWidth,
+    Function() startDownloadFunction,
+  ) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            colors: [Consts.surface, Consts.primary],
+            radius: 2,
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ProjectLogo(width: 60),
+                    IconButton(
+                      icon: const Icon(Icons.login, color: Colors.white),
+                      onPressed: () {}, // TODO: Auth
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 40),
+                SelectableText.rich(
+                  textAlign: TextAlign.center,
+                  TextSpan(
+                    style: Theme.of(context).textTheme.displaySmall!.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    children: [
+                      const TextSpan(
+                        text: "Spoti",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      TextSpan(
+                        text: "Get",
+                        style: TextStyle(color: Consts.primary),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "Download your favourite playlist and albums in high quality.",
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Consts.secondary,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                InputTextbox(
+                  verticalPadding: 5,
+                  textController: urlController,
+                  width: screenWidth * 0.9,
+                  horizontalPadding: 0,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Keep order?",
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    Checkbox(
+                      value: wantTracksNumbered,
+                      onChanged: (value) =>
+                          setState(() => wantTracksNumbered = value!),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                StartDownloadButton(
+                  onClickedFunc: startDownloadFunction,
+                  width: screenWidth * 0.8,
+                  horizontalPadding: 0,
+                ),
+                const Divider(height: 60, thickness: 1, color: Colors.white24),
+                Text(
+                  "Made by Dominik Žampach",
+                  style: TextStyle(color: Consts.secondary),
                 ),
               ],
             ),
           ),
         ),
-      );
-    }
-
-    return Container(child: Text("MOBILE"));
+      ),
+    );
   }
 }

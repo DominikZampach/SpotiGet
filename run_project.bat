@@ -7,7 +7,7 @@ set PROJECT_ROOT=%~dp0
 
 wt -w 0 nt --title "Redis" -d "%PROJECT_ROOT%backend\bin\Redis" cmd /k "redis-server.exe" ^
 ; nt --title "API" -d "%PROJECT_ROOT%backend" cmd /k "venv\Scripts\python.exe main.py" ^
-; nt --title "Celery" -d "%PROJECT_ROOT%backend" cmd /k "venv\Scripts\python.exe -m celery -A tasks worker --loglevel=info --pool=solo" ^
+; nt --title "Celery" -d "%PROJECT_ROOT%backend" cmd /k "venv\Scripts\python.exe -m celery -A tasks worker -l info -P gevent -c 100" ^
 ; nt --title "Flutter" -d "%PROJECT_ROOT%frontend" cmd /k "flutter run -d chrome"
 
 echo ---------------------------------------------------
